@@ -1,50 +1,58 @@
 # AI Usage
 
-*Using AI tools (Claude, Copilot, ChatGPT, Cursor, etc.) on this assignment is
-**allowed and expected** — we build with AI ourselves. This page is about
-**transparency and judgment**, not a confession. There is no penalty for using
-AI well, and no bonus for avoiding it. Fill in the sections below and delete
-these prompts.*
-
 ## How I used AI
 
-*A few sentences: which tools, and what role they played. Did the AI write most
-of the code while you scoped and reviewed? Did you use it mainly to debug, to
-draft SQL, to explain an unfamiliar concept (e.g. recursive CTEs), or to refine
-your charts? Be honest about the division of labor.*
-
-
+I used OpenAI Codex throughout the assignment as an implementation and review
+partner. It helped me inspect the dataset, explain unfamiliar SQL concepts,
+draft the SQL and Python, run queries against local PostgreSQL, and create the
+Plotly/NetworkX outputs. I worked iteratively: I asked for plain-English
+explanations, challenged logic I did not understand, selected assumptions, and
+reviewed actual query results before accepting changes. AI produced most of the
+initial code; I directed the analysis and required revisions where the behavior
+did not match my interpretation of the business question.
 
 ## Prompts that mattered
 
-*The handful of prompts (not all of them) whose outputs most shaped what you
-shipped. For each, a one-line note on what it produced or changed. If you didn't
-use AI, say so and remove this section.*
+### 1. Repayment definitions and edge cases
 
-### 1.
+> Help me identify the assumptions and edge cases for plan amortization and
+> customer on-time segmentation before writing SQL.
 
-> *(prompt)*
+This exposed the installment-rounding discrepancy, distinguished contractual
+amounts from cash collected, and led to explicit treatment of partial payments
+and customers without due history.
 
-*What it produced / why it mattered:*
+### 2. Graph traversal from first principles
 
-### 2.
+> Explain the account-link table, recursive traversal, cycle prevention,
+> fewest-hops paths, and least-cost paths in plain English before writing Part B.
 
-> *(prompt)*
+This helped me understand why the direct one-hop link from 700 to 2800 is weaker
+under the supplied weights than the three-hop device/card/device route.
 
-*What it produced / why it mattered:*
+### 3. Reproducible visual outputs
+
+> Load the completed SQL results into pandas and build the required Plotly and
+> NetworkX figures with database credentials kept outside source control.
+
+This produced the reusable data-access module and the first chart drafts, which I
+then reviewed and revised—for example, adding the delinquency formula and
+numerator/denominator labels directly to the merchant chart.
 
 ## Owned vs. delegated
 
-*What you owned (framing, design decisions, trade-off calls, catching mistakes)
-vs. what you delegated (boilerplate, first-draft code, prose). This is the part
-we read most closely.*
-
-- **Owned:**
-- **Delegated:**
+- **Owned:** interpretation of the questions; decisions about settlement,
+  no-history customers, and tie-breaking; requests for simpler explanations;
+  review of SQL outputs and chart clarity; selection of the cohort curve for C4.
+- **Delegated:** first-draft SQL and Python, repetitive database plumbing,
+  visualization boilerplate, formatting, and automated verification commands.
 
 ## Where AI got it wrong
 
-*Anything the AI produced that was incorrect, subtly buggy, or off-target, and
-how you caught it. A good catch here tells us more than clean code does.*
-
--
+- An early graph explanation drew two-hop intermediate edges without first
+  verifying them. I questioned the result; the final paths and figures use
+  database-verified edges.
+- The first A4 draft placed customers with no due installments into `NTILE`,
+  which mixed unknown repayment performance into the worst quartile. I changed
+  the requirement so only customers with due history receive Q1–Q4; other
+  customers remain visible with descriptive labels and a `NULL` rate.
